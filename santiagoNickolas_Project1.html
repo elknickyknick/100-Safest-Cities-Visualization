@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<title>100 Safest Cities in the US - Nickolas Santiago</title>
+	<script src="http://d3js.org/d3.v3.min.js"></script>
+	<style type="text/css">
+		
+	</style>
+</head>
+<body>
+	<div id="info">
+	</div>
+	<script type="text/javascript">
+		"use strict";
+		
+		var svgWidth = 1000;
+		var barHeight = 27;
+		var barSpacing = 10;
+		var textHeight = 14;
+			
+		var svg = d3.select('#info')
+					.append("svg")
+					.attr("width", svgWidth)
+					.attr("height", ((barHeight + barSpacing)*100) );
+		
+		d3.json("100SafestCities.json", function(dataa)
+		{	
+			//---setting the bars
+			svg.selectAll("rect")
+			   .data(dataa.safeCity)
+		       .enter()
+		       .append("rect")
+		       .attr("x", function(d)
+				    {
+						return 210;
+					})
+		       .attr("y", function(d, i)
+					{
+						return ((barSpacing/2) + (i * (barHeight + barSpacing)));
+					})
+		       .attr("width", function(d, i)
+					{
+						return (dataa.safeCity[i].totCrimes - ((dataa.safeCity[i].totCrimes * 3)/5));
+					})
+			   .attr("height", barHeight)
+		       .attr("fill", "#ff02cc");
+		    
+			//---setting the city names
+		    svg.selectAll("cityname")
+		       .data(dataa.safeCity)
+			   .enter()
+			   .append("text")
+			   .text(function(d, i)
+			        {
+						return dataa.safeCity[i].city;
+				    })
+			   .attr("x", function(d)
+			        {
+						return 200;
+					})
+			   .attr("y", function(d, i)
+			        {
+						return ((barSpacing) + (i * (barHeight + barSpacing))) + textHeight;
+					})
+			   .attr("text-anchor", "end")
+			   .attr("font-family", "sans-serif")
+			   .attr("font-size", textHeight + "px")
+			   .attr("font-weight", "bold")
+			   .attr("fill", "black");
+		});
+	</script>
+</body>
+</html>
