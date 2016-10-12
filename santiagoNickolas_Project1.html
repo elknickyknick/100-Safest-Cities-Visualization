@@ -5,12 +5,22 @@
 	<title>100 Safest Cities in the US - Nickolas Santiago</title>
 	<script src="http://d3js.org/d3.v3.min.js"></script>
 	<style type="text/css">
-		
+	
 	</style>
 </head>
 <body>
+	<select id="graphSelector" >
+		<option value="none">Select Graph</option>
+		<option value="optionA">optionA</option>
+		<option value="optionB">optionB</option>
+		<option value="optionC">optionC</option>
+		<option value="optionD">optionD</option>
+	</select>
+
+
 	<div id="info">
 	</div>
+	
 	<script type="text/javascript">
 		"use strict";
 		
@@ -19,55 +29,271 @@
 		var barSpacing = 10;
 		var textHeight = 14;
 			
-		var svg = d3.select('#info')
+		/*var svg = d3.select('#info')
 					.append("svg")
 					.attr("width", svgWidth)
-					.attr("height", ((barHeight + barSpacing)*100) );
+					.attr("height", ((barHeight + barSpacing)*100) );*/
 		
 		d3.json("100SafestCities.json", function(dataa)
 		{	
-			//---setting the bars
-			svg.selectAll("rect")
-			   .data(dataa.safeCity)
-		       .enter()
-		       .append("rect")
-		       .attr("x", function(d)
-				    {
-						return 210;
-					})
-		       .attr("y", function(d, i)
+		
+			document.querySelector("#graphSelector").onchange = function(event)
+			{
+				if(event.target.value == "optionA")
+				{
+					d3.select("svg").remove();
+					
+					var svg = d3.select('#info')
+					.append("svg")
+					.attr("width", svgWidth)
+					.attr("height", ((barHeight + barSpacing)*100) );
+					
+					
+					console.log("coc");
+					svg.selectAll("roct")
+					   .data(dataa.safeCity)
+					   .enter()
+					   .append("rect")
+					   .attr("x", function(d)
+							{
+								return 210;
+							})
+		               .attr("y", function(d, i)
+							{
+								return ((barSpacing/2) + (i * (barHeight + barSpacing)));
+							})
+		               .attr("width", function(d, i)
+						    {
+								return (d.totCrimes - ((d.totCrimes * 3)/5));
+								//return (dataa.safeCity[i].totCrimes - ((dataa.safeCity[i].totCrimes * 3)/5));
+							})
+			           .attr("height", barHeight)
+		               .attr("fill", "#ff02cc");
+					
+					svg.selectAll("cityname")
+					   .data(dataa.safeCity)
+					   .enter()
+					   .append("text")
+					   .text(function(d, i)
+							{
+								return dataa.safeCity[i].city;
+							})
+					   .attr("x", function(d)
+							{
+								return 200;
+							})
+					   .attr("y", function(d, i)
+							{
+								return ((barSpacing) + (i * (barHeight + barSpacing))) + textHeight;
+							})
+					   .attr("text-anchor", "end")
+					   .attr("font-family", "sans-serif")
+					   .attr("font-size", textHeight + "px")
+					   .attr("font-weight", "bold")
+					   .attr("fill", "black");
+				}
+				if(event.target.value == "optionB")
+				{
+					d3.select("svg").remove();
+					
+					var svg = d3.select('#info')
+					.append("svg")
+					.attr("width", svgWidth)
+					.attr("height", ((barHeight + barSpacing)*100) );
+					
+					
+					var ar = dataa.safeCity.length - 1;
+					
+					
+					
+					svg.selectAll("roct")
+					   .data(dataa.safeCity)
+					   .enter()
+					   .append("rect")
+					   .attr("x", function(d)
+							{
+								return 210;
+							})
+		               .attr("y", function(d, i)
+							{
+								return ((barSpacing/2) + ((i) * (barHeight + barSpacing)));
+							})
+		               .attr("width", function(d, i)
+						    {
+								return (dataa.safeCity[ar-i].totCrimes - ((dataa.safeCity[ar-i].totCrimes * 3)/5));
+							})
+			           .attr("height", barHeight)
+		               .attr("fill", "#ff02cc");
+					
+					svg.selectAll("cityname")
+					   .data(dataa.safeCity)
+					   .enter()
+					   .append("text")
+					   .text(function(d, i)
+							{
+								return dataa.safeCity[i].city;
+							})
+					   .attr("x", function(d)
+							{
+								return 200;
+							})
+					   .attr("y", function(d, i)
+							{
+								return ((barSpacing) + ((ar-i) * (barHeight + barSpacing))) + textHeight;
+							})
+					   .attr("text-anchor", "end")
+					   .attr("font-family", "sans-serif")
+					   .attr("font-size", textHeight + "px")
+					   .attr("font-weight", "bold")
+					   .attr("fill", "black");
+				}
+				else if(event.target.value == "optionC")
+				{
+					d3.select("svg").remove();
+					var svg = d3.select('#info')
+					.append("svg")
+					.attr("width", svgWidth)
+					.attr("height", ((barHeight + barSpacing)*100) );
+					
+					var tempCityHolder = [];
+					var tempCrimeRateHolder = [];
+					var temperC = [];
+					var temperD = [];
+			
+					for(var v = 0; v < dataa.safeCity.length; v++)
 					{
-						return ((barSpacing/2) + (i * (barHeight + barSpacing)));
-					})
-		       .attr("width", function(d, i)
+						tempCityHolder.push(dataa.safeCity[v].city);
+						tempCrimeRateHolder.push(dataa.safeCity[v].totCrimes);	
+					}
+					for(var v = 0; v < (dataa.safeCity.length); v++)
 					{
-						return (dataa.safeCity[i].totCrimes - ((dataa.safeCity[i].totCrimes * 3)/5));
-					})
-			   .attr("height", barHeight)
-		       .attr("fill", "#ff02cc");
-		    
-			//---setting the city names
-		    svg.selectAll("cityname")
-		       .data(dataa.safeCity)
-			   .enter()
-			   .append("text")
-			   .text(function(d, i)
-			        {
-						return dataa.safeCity[i].city;
-				    })
-			   .attr("x", function(d)
-			        {
-						return 200;
-					})
-			   .attr("y", function(d, i)
-			        {
-						return ((barSpacing) + (i * (barHeight + barSpacing))) + textHeight;
-					})
-			   .attr("text-anchor", "end")
-			   .attr("font-family", "sans-serif")
-			   .attr("font-size", textHeight + "px")
-			   .attr("font-weight", "bold")
-			   .attr("fill", "black");
+						//---find the highest crime rate value so that, specifically, its index in 
+						//   the array can be found and accessed
+						var highestIndex;
+						for(var n = 0; n < tempCrimeRateHolder.length; n++)
+						{
+							if(tempCrimeRateHolder[n] == (Math.max.apply(null, tempCrimeRateHolder)))
+							{
+								highestIndex = n;
+							}
+						}
+				
+						temperC.push(tempCrimeRateHolder[highestIndex]);
+						temperD.push(tempCityHolder[highestIndex]);
+				
+						tempCrimeRateHolder.splice(highestIndex,1);
+						tempCityHolder.splice(highestIndex,1);
+					}
+					
+					svg.selectAll("rect")
+                       .data(temperC)
+                       .enter()
+                       .append("rect")
+			           .attr("x", 210)
+			           .attr("y", function(d,i)
+							{
+								return ((barSpacing/2) + (i * (barHeight + barSpacing)));
+							})
+			           .attr("width", function(d,i)
+							{
+								return (d - ((d * 3)/5));
+							})
+			           .attr("height", barHeight)
+			           .attr("fill", "#cccdd7");
+					
+					svg.selectAll("cityname")
+					   .data(temperD)
+			           .enter()
+			           .append("text")
+			           .text(function(d, i)
+							{
+								return d;
+							})
+			           .attr("x", 200)
+			           .attr("y", function(d, i)
+							{
+								return ((barSpacing) + (i * (barHeight + barSpacing))) + textHeight;
+							})
+					   .attr("text-anchor", "end")
+			           .attr("font-family", "sans-serif")
+			           .attr("font-size", textHeight + "px")
+			           .attr("font-weight", "bold")
+			           .attr("fill", "black");
+				}
+				else if(event.target.value == "optionD")
+				{
+					d3.select("svg").remove();
+					var svg = d3.select('#info')
+					.append("svg")
+					.attr("width", svgWidth)
+					.attr("height", ((barHeight + barSpacing)*100) );
+					
+					var tempCityHolder = [];
+					var tempCrimeRateHolder = [];
+					var temperC = [];
+					var temperD = [];
+			
+					for(var v = 0; v < dataa.safeCity.length; v++)
+					{
+						tempCityHolder.push(dataa.safeCity[v].city);
+						tempCrimeRateHolder.push(dataa.safeCity[v].totCrimes);	
+					}
+					for(var v = 0; v < (dataa.safeCity.length); v++)
+					{
+						//---find the highest crime rate value so that, specifically, its index in 
+						//   the array can be found and accessed
+						var highestIndex;
+						for(var n = 0; n < tempCrimeRateHolder.length; n++)
+						{
+							if(tempCrimeRateHolder[n] == (Math.min.apply(null, tempCrimeRateHolder)))
+							{
+								highestIndex = n;
+							}
+						}
+				
+						temperC.push(tempCrimeRateHolder[highestIndex]);
+						temperD.push(tempCityHolder[highestIndex]);
+				
+						tempCrimeRateHolder.splice(highestIndex,1);
+						tempCityHolder.splice(highestIndex,1);
+					}
+					
+					svg.selectAll("rect")
+                       .data(temperC)
+                       .enter()
+                       .append("rect")
+			           .attr("x", 210)
+			           .attr("y", function(d,i)
+							{
+								return ((barSpacing/2) + (i * (barHeight + barSpacing)));
+							})
+			           .attr("width", function(d,i)
+							{
+								return (d - ((d * 3)/5));
+							})
+			           .attr("height", barHeight)
+			           .attr("fill", "#cccdd7");
+					
+					svg.selectAll("cityname")
+					   .data(temperD)
+			           .enter()
+			           .append("text")
+			           .text(function(d, i)
+							{
+								return d;
+							})
+			           .attr("x", 200)
+			           .attr("y", function(d, i)
+							{
+								return ((barSpacing) + (i * (barHeight + barSpacing))) + textHeight;
+							})
+					   .attr("text-anchor", "end")
+			           .attr("font-family", "sans-serif")
+			           .attr("font-size", textHeight + "px")
+			           .attr("font-weight", "bold")
+			           .attr("fill", "black");
+				}
+			};
 		});
 	</script>
 </body>
