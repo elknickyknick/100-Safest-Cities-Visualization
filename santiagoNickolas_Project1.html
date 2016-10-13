@@ -4,84 +4,153 @@
 	<meta charset="utf-8" />
 	<title>100 Safest Cities in the US - Nickolas Santiago</title>
 	<script src="http://d3js.org/d3.v3.min.js"></script>
+	<!--<script type="text/javascript" src="d3/d3.min.js"></script>--->
 	<style type="text/css">
-	
+		svg
+		{
+			margin-left: 50%;
+			transform: translateX(-50%);
+			background-color: #decece;
+		}
+		.toolTip
+		{
+			margin-top: 4px;
+			margin-left: 6px;
+			padding: 6px;
+			border: 2px solid #0c0c0c;
+			font-family: sans-serif;
+			font-size: 16pt;
+			font-weight: bolder;
+			background-color: #e3e3e3;
+		}
 	</style>
 </head>
 <body>
 	<select id="graphSelector" >
-		<option value="none">Select Graph</option>
-		<option value="optionA">optionA</option>
-		<option value="optionB">optionB</option>
-		<option value="optionC">optionC</option>
-		<option value="optionD">optionD</option>
+		<option value="none">--Select Graph--</option>
+		<option value="optionA">Crime Index (lowest to highest)</option>
+		<option value="optionB">Crime Index (highest to lowest)</option>
+		<option value="optionC">Total Crimes (highest to lowest)</option>
+		<option value="optionD">Total Crimes (lowest to highest)</option>
+		<option value="optionE">City Count by State</option>
 	</select>
-
-
 	<div id="info">
 	</div>
 	
 	<script type="text/javascript">
 		"use strict";
 		
-		var svgWidth = 1000;
-		var barHeight = 27;
-		var barSpacing = 10;
-		var textHeight = 14;
-			
-		/*var svg = d3.select('#info')
-					.append("svg")
-					.attr("width", svgWidth)
-					.attr("height", ((barHeight + barSpacing)*100) );*/
-		
 		d3.json("100SafestCities.json", function(dataa)
 		{	
-		
 			document.querySelector("#graphSelector").onchange = function(event)
 			{
+	  			 /**When a graph is chosen, the old SVG image on the screen is removed, a new one is made, 
+				    and it is loaded with information depending on what graph was chosen. The actual bars
+				    are loaded first, then any associated text.                                          **/
+				   
+				//---first step is to hold the each element's information in accessible arrays
+				var cityNameHolder = [];
+				var stateNameHolder = [];
+				var crimeRateHolder = [];
+				var colorHolder = [];
+				for(var cityInfo = 0; cityInfo < dataa.safeCity.length; cityInfo++)
+				{
+					cityNameHolder.push(dataa.safeCity[cityInfo].city);
+					stateNameHolder.push(dataa.safeCity[cityInfo].state);
+					crimeRateHolder.push(dataa.safeCity[cityInfo].totCrimes);
+					
+					//---the following colors are based based on information not in the JSON
+					//   file. If a city's Crime Index (how much safer it is than the average
+					//   US city) is lower than 80%, the color is red. If it is lower than 90%, 
+					//   its color is yellow. Higher than 90% is green. 
+					//---this becomes more useful for options C and D since I want to perserve 
+					//   the element's position in the Crime Index when the arrays are put into 
+					//   different orders
+					if(cityInfo <= 65)
+					{
+						colorHolder.push("red");
+					}
+					else if(cityInfo > 65 && cityInfo < 93)
+					{
+						colorHolder.push("yellow");
+					}
+					else
+					{
+						colorHolder.push("green");
+					}
+				}
+				
+				var textHeight = 14;
+				
+				/**all used in Horizontal Graphs**/
+				var horizBarScale = (3/5);
+				var highestCrimeRate = Math.max.apply(null,crimeRateHolder);
+				//---svg width
+				var textBorder = 200;
+				var horizSvgWidth = (textBorder + (highestCrimeRate-(highestCrimeRate*horizBarScale)) + 20);
+				//---svg height
+				var barHeight = 27;
+				var barSpacing = 10;
+				var horizSvgHeight = ((barHeight + barSpacing) * dataa.safeCity.length);
+					
+					
+			/***Horizontal Bar Choices***/
 				if(event.target.value == "optionA")
 				{
 					d3.select("svg").remove();
-					
 					var svg = d3.select('#info')
-					.append("svg")
-					.attr("width", svgWidth)
-					.attr("height", ((barHeight + barSpacing)*100) );
+							    .append("svg")
+							    .attr("width", horizSvgWidth)
+								.attr("height", horizSvgHeight);
+					var tooltip = d3.select("#info")
+									.append("div")
+									.style("position", "absolute")
+									.style("z-index", "10")
+									.style("visibility", "hidden")
+									.classed("toolTip", true);
 					
-					
-					console.log("coc");
-					svg.selectAll("roct")
+					svg.selectAll("crIndexHightoLow_bars")
 					   .data(dataa.safeCity)
 					   .enter()
 					   .append("rect")
-					   .attr("x", function(d)
-							{
-								return 210;
-							})
+					   .attr("x", textBorder + 10)
 		               .attr("y", function(d, i)
 							{
-								return ((barSpacing/2) + (i * (barHeight + barSpacing)));
+								return ((barSpacing/2) + (i * (barHeight + barSpacing)))
 							})
 		               .attr("width", function(d, i)
 						    {
-								return (d.totCrimes - ((d.totCrimes * 3)/5));
-								//return (dataa.safeCity[i].totCrimes - ((dataa.safeCity[i].totCrimes * 3)/5));
+								return (d.totCrimes - (d.totCrimes * horizBarScale))
 							})
 			           .attr("height", barHeight)
-		               .attr("fill", "#ff02cc");
-					
-					svg.selectAll("cityname")
+					   .attr("fill", function(d,i)
+					        {
+								return colorHolder[i];
+							})
+						.on("mouseover", function(d,i)
+						   {
+								return (tooltip.style("visibility", "visible")
+								               .text("Total Crime: " + d.totCrimes));
+						   })
+						.on("mousemove", function()
+						   {
+								return (tooltip.style("top", (d3.event.pageY-10)+"px")
+								               .style("left",(d3.event.pageX+10)+"px"));
+						   })
+						.on("mouseout", function()
+						   {
+								return tooltip.style("visibility", "hidden");
+						   });
+							
+					svg.selectAll("crIndexHightoLow_cityName")
 					   .data(dataa.safeCity)
 					   .enter()
 					   .append("text")
 					   .text(function(d, i)
 							{
-								return dataa.safeCity[i].city;
+								return dataa.safeCity[i].city + ", " + dataa.safeCity[i].state;
 							})
-					   .attr("x", function(d)
-							{
-								return 200;
-							})
+					   .attr("x", textBorder)
 					   .attr("y", function(d, i)
 							{
 								return ((barSpacing) + (i * (barHeight + barSpacing))) + textHeight;
@@ -92,51 +161,65 @@
 					   .attr("font-weight", "bold")
 					   .attr("fill", "black");
 				}
+				
 				if(event.target.value == "optionB")
 				{
 					d3.select("svg").remove();
-					
 					var svg = d3.select('#info')
-					.append("svg")
-					.attr("width", svgWidth)
-					.attr("height", ((barHeight + barSpacing)*100) );
-					
-					
+							    .append("svg")
+								.attr("width", horizSvgWidth)
+								.attr("height", horizSvgHeight);
+					var tooltip = d3.select("#info")
+									.append("div")
+									.style("position", "absolute")
+									.style("z-index", "10")
+									.style("visibility", "hidden")
+									.classed("toolTip", true);
 					var ar = dataa.safeCity.length - 1;
 					
 					
-					
-					svg.selectAll("roct")
+					svg.selectAll("crIndexLowToHigh_bars")
 					   .data(dataa.safeCity)
 					   .enter()
 					   .append("rect")
-					   .attr("x", function(d)
-							{
-								return 210;
-							})
+					   .attr("x", textBorder + 10)
 		               .attr("y", function(d, i)
 							{
 								return ((barSpacing/2) + ((i) * (barHeight + barSpacing)));
 							})
 		               .attr("width", function(d, i)
 						    {
-								return (dataa.safeCity[ar-i].totCrimes - ((dataa.safeCity[ar-i].totCrimes * 3)/5));
+								return (dataa.safeCity[ar-i].totCrimes - (dataa.safeCity[ar-i].totCrimes * horizBarScale));
 							})
 			           .attr("height", barHeight)
-		               .attr("fill", "#ff02cc");
+		               .attr("fill", function(d,i)
+					        {
+								return colorHolder[ar-i];
+							})
+					   .on("mouseover", function(d,i)
+						   {
+								return (tooltip.style("visibility", "visible")
+								               .text("Total Crime: " + dataa.safeCity[ar-i].totCrimes));
+						   })
+					   .on("mousemove", function()
+						  {
+								return (tooltip.style("top", (d3.event.pageY-10)+"px")
+								               .style("left",(d3.event.pageX+10)+"px"));
+						  })
+					   .on("mouseout", function()
+						  {
+								return tooltip.style("visibility", "hidden");
+						  });
 					
-					svg.selectAll("cityname")
+					svg.selectAll("crIndexLowToHigh_cityName")
 					   .data(dataa.safeCity)
 					   .enter()
 					   .append("text")
 					   .text(function(d, i)
 							{
-								return dataa.safeCity[i].city;
+								return dataa.safeCity[i].city + ", " + dataa.safeCity[i].state;
 							})
-					   .attr("x", function(d)
-							{
-								return 200;
-							})
+					   .attr("x", textBorder)
 					   .attr("y", function(d, i)
 							{
 								return ((barSpacing) + ((ar-i) * (barHeight + barSpacing))) + textHeight;
@@ -147,69 +230,91 @@
 					   .attr("font-weight", "bold")
 					   .attr("fill", "black");
 				}
+				
 				else if(event.target.value == "optionC")
 				{
 					d3.select("svg").remove();
 					var svg = d3.select('#info')
-					.append("svg")
-					.attr("width", svgWidth)
-					.attr("height", ((barHeight + barSpacing)*100) );
+								.append("svg")
+								.attr("width", horizSvgWidth)
+								.attr("height",horizSvgHeight);
+					var tooltip = d3.select("#info")
+									.append("div")
+									.style("position", "absolute")
+									.style("z-index", "10")
+									.style("visibility", "hidden")
+									.classed("toolTip", true);
 					
-					var tempCityHolder = [];
-					var tempCrimeRateHolder = [];
-					var temperC = [];
-					var temperD = [];
-			
-					for(var v = 0; v < dataa.safeCity.length; v++)
-					{
-						tempCityHolder.push(dataa.safeCity[v].city);
-						tempCrimeRateHolder.push(dataa.safeCity[v].totCrimes);	
-					}
+					var tempCrimeRate = [];
+					var tempCityName = [];
+					var tempStateName = [];
+					var tempColor = [];
+					
 					for(var v = 0; v < (dataa.safeCity.length); v++)
 					{
+						
 						//---find the highest crime rate value so that, specifically, its index in 
 						//   the array can be found and accessed
 						var highestIndex;
-						for(var n = 0; n < tempCrimeRateHolder.length; n++)
+						for(var n = 0; n < crimeRateHolder.length; n++)
 						{
-							if(tempCrimeRateHolder[n] == (Math.max.apply(null, tempCrimeRateHolder)))
+							if(crimeRateHolder[n] == (Math.max.apply(null, crimeRateHolder)))
 							{
 								highestIndex = n;
 							}
 						}
-				
-						temperC.push(tempCrimeRateHolder[highestIndex]);
-						temperD.push(tempCityHolder[highestIndex]);
-				
-						tempCrimeRateHolder.splice(highestIndex,1);
-						tempCityHolder.splice(highestIndex,1);
+						tempCrimeRate.push(crimeRateHolder[highestIndex]);
+						tempCityName.push(cityNameHolder[highestIndex]);
+						tempStateName.push(stateNameHolder[highestIndex]);
+						tempColor.push(colorHolder[highestIndex]);
+						crimeRateHolder.splice(highestIndex,1);
+						cityNameHolder.splice(highestIndex,1);
+						stateNameHolder.splice(highestIndex,1);
+						colorHolder.splice(highestIndex,1);
 					}
 					
-					svg.selectAll("rect")
-                       .data(temperC)
+					svg.selectAll("totalCrimHighToLow_bars")
+                       .data(tempCrimeRate)
                        .enter()
                        .append("rect")
-			           .attr("x", 210)
+			           .attr("x", textBorder+10)
 			           .attr("y", function(d,i)
 							{
 								return ((barSpacing/2) + (i * (barHeight + barSpacing)));
 							})
 			           .attr("width", function(d,i)
 							{
-								return (d - ((d * 3)/5));
+								return (d - (d * horizBarScale));
 							})
 			           .attr("height", barHeight)
-			           .attr("fill", "#cccdd7");
+			           .attr("fill", function(d,i)
+					        {
+								return tempColor[i];
+							})
+					   .on("mouseover", function(d,i)
+						   {
+								return (tooltip.style("visibility", "visible")
+								               .text("Total Crime: " + d));
+						   })
+					   .on("mousemove", function()
+						  {
+								return (tooltip.style("top", (d3.event.pageY-10)+"px")
+								               .style("left",(d3.event.pageX+10)+"px"));
+						  })
+					   .on("mouseout", function()
+						  {
+								return tooltip.style("visibility", "hidden");
+						  });
 					
-					svg.selectAll("cityname")
-					   .data(temperD)
+					svg.selectAll("totalCrimHighToLow_cityName")
+					   .data(tempCityName)
 			           .enter()
 			           .append("text")
 			           .text(function(d, i)
 							{
-								return d;
+								return tempCityName[i] + ", " + tempStateName[i];
 							})
-			           .attr("x", 200)
+			           .attr("x", textBorder)
 			           .attr("y", function(d, i)
 							{
 								return ((barSpacing) + (i * (barHeight + barSpacing))) + textHeight;
@@ -220,69 +325,89 @@
 			           .attr("font-weight", "bold")
 			           .attr("fill", "black");
 				}
+				
 				else if(event.target.value == "optionD")
 				{
 					d3.select("svg").remove();
 					var svg = d3.select('#info')
-					.append("svg")
-					.attr("width", svgWidth)
-					.attr("height", ((barHeight + barSpacing)*100) );
-					
-					var tempCityHolder = [];
-					var tempCrimeRateHolder = [];
-					var temperC = [];
-					var temperD = [];
-			
-					for(var v = 0; v < dataa.safeCity.length; v++)
-					{
-						tempCityHolder.push(dataa.safeCity[v].city);
-						tempCrimeRateHolder.push(dataa.safeCity[v].totCrimes);	
-					}
+								.append("svg")
+								.attr("width", horizSvgWidth)
+								.attr("height",horizSvgHeight);
+					var tooltip = d3.select("#info")
+									.append("div")
+									.style("position", "absolute")
+									.style("z-index", "10")
+									.style("visibility", "hidden")
+									.classed("toolTip", true);
+									
+					var tempCrimeRate = [];
+					var tempCityName = [];
+					var tempStateName = [];
+					var tempColor = [];
 					for(var v = 0; v < (dataa.safeCity.length); v++)
 					{
 						//---find the highest crime rate value so that, specifically, its index in 
 						//   the array can be found and accessed
-						var highestIndex;
-						for(var n = 0; n < tempCrimeRateHolder.length; n++)
+						var lowestIndex;
+						for(var n = 0; n < crimeRateHolder.length; n++)
 						{
-							if(tempCrimeRateHolder[n] == (Math.min.apply(null, tempCrimeRateHolder)))
+							if(crimeRateHolder[n] == (Math.min.apply(null, crimeRateHolder)))
 							{
-								highestIndex = n;
+								lowestIndex = n;
 							}
 						}
-				
-						temperC.push(tempCrimeRateHolder[highestIndex]);
-						temperD.push(tempCityHolder[highestIndex]);
-				
-						tempCrimeRateHolder.splice(highestIndex,1);
-						tempCityHolder.splice(highestIndex,1);
+						tempCrimeRate.push(crimeRateHolder[lowestIndex]);
+						tempCityName.push(cityNameHolder[lowestIndex]);
+						tempStateName.push(stateNameHolder[lowestIndex]);
+						tempColor.push(colorHolder[lowestIndex]);
+						crimeRateHolder.splice(lowestIndex,1);
+						cityNameHolder.splice(lowestIndex,1);
+						stateNameHolder.splice(lowestIndex,1);
+						colorHolder.splice(lowestIndex,1);
 					}
 					
-					svg.selectAll("rect")
-                       .data(temperC)
+					svg.selectAll("totalCrimeLowToHigh_bars")
+                       .data(tempCrimeRate)
                        .enter()
                        .append("rect")
-			           .attr("x", 210)
+			           .attr("x", textBorder + 10)
 			           .attr("y", function(d,i)
 							{
 								return ((barSpacing/2) + (i * (barHeight + barSpacing)));
 							})
 			           .attr("width", function(d,i)
 							{
-								return (d - ((d * 3)/5));
+								return (d - (d * horizBarScale));
 							})
 			           .attr("height", barHeight)
-			           .attr("fill", "#cccdd7");
+			           .attr("fill", function(d,i)
+							{
+								return tempColor[i];
+							})
+					   .on("mouseover", function(d,i)
+						   {
+								return (tooltip.style("visibility", "visible")
+								               .text("Total Crime: " + d));
+						   })
+					   .on("mousemove", function()
+						  {
+								return (tooltip.style("top", (d3.event.pageY-10)+"px")
+								               .style("left",(d3.event.pageX+10)+"px"));
+						  })
+					   .on("mouseout", function()
+						  {
+								return tooltip.style("visibility", "hidden");
+						  });
 					
-					svg.selectAll("cityname")
-					   .data(temperD)
+					svg.selectAll("totalCrimeLowToHigh_cityName")
+					   .data(tempCityName)
 			           .enter()
 			           .append("text")
 			           .text(function(d, i)
 							{
-								return d;
+								return tempCityName[i] + ", " + tempStateName[i];
 							})
-			           .attr("x", 200)
+			           .attr("x", textBorder)
 			           .attr("y", function(d, i)
 							{
 								return ((barSpacing) + (i * (barHeight + barSpacing))) + textHeight;
@@ -292,6 +417,109 @@
 			           .attr("font-size", textHeight + "px")
 			           .attr("font-weight", "bold")
 			           .attr("fill", "black");
+				}
+			
+			/***Vertical Bar Choice***/
+				else if(event.target.value == "optionE")
+				{
+					//---for this option, I needed to know what individual states existed
+					//   in the JSON file and how many times they existed. In order to do 
+					//   so, I made an array to hold one reference to each state and one
+					//   array to keep count.
+					
+					var statess = [];
+					var count = [];
+					//---getting one reference to each state required fiiltering the array
+					//   that held states 
+					statess = stateNameHolder.filter(function(value, index,self)
+					{
+						return self.indexOf(value) === index;
+					});
+					//---count how many times a state exists in the JSON
+					for(var h = 0; h < statess.length; h++)
+					{
+						var c = 0;
+						for(var r = 0; r < dataa.safeCity.length; r++)
+						{
+							if(dataa.safeCity[r].state == statess[h])
+							{
+								c = c + 1;
+							}
+						}
+						count.push(c);
+					}
+					
+					var verBarWidth = 36;
+					var verBarSpacing = 10;
+					var verSvgWidth = ((verBarSpacing/2) + (count.length*(verBarWidth+verBarSpacing)));
+					var verSvgHeight = (30 + (Math.max.apply(null, count)*15) + 10);
+					
+					d3.select("svg").remove();
+					var svg = d3.select('#info')
+							    .append("svg")
+							    .attr("width", verSvgWidth)
+								.attr("height", verSvgHeight);
+					var tooltip = d3.select("#info")
+									.append("div")
+									.style("position", "absolute")
+									.style("z-index", "10")
+									.style("visibility", "hidden")
+									.classed("toolTip", true);
+					
+					svg.selectAll("cityCount_bars")
+                       .data(count)
+                       .enter()
+                       .append("rect")
+			           .attr("x", function(d,i)
+					        {
+								return ((verBarSpacing/2) + (i*(verBarWidth + verBarSpacing)));
+							})
+			           .attr("y", function(d)
+							{
+								return ((verSvgHeight - (d*15)) - 30);
+							})
+			           .attr("width", 36)
+			           .attr("height", function(d,i)
+							{
+								return (d * 15);
+							})
+			           .attr("fill", "#0c0c0c")
+					   .on("mouseover", function(d,i)
+						   {
+								return (tooltip.style("visibility", "visible")
+								               .text("City Count: " + d));
+						   })
+					   .on("mousemove", function()
+						  {
+								return (tooltip.style("top", (d3.event.pageY-10)+"px")
+								               .style("left",(d3.event.pageX+10)+"px"));
+						  })
+					   .on("mouseout", function()
+						  {
+								return tooltip.style("visibility", "hidden");
+						  });
+					
+					svg.selectAll("cityCount_stateName")
+					   .data(statess)
+			           .enter()
+			           .append("text")
+			           .text(function(d, i)
+							{
+								return d;
+							})
+			           .attr("x", function(d,i)
+							{
+								return (i*(verBarWidth + verBarSpacing)) + 31;
+							})
+			           .attr("y", function(d, i)
+							{
+								return verSvgHeight - 15;
+							})
+					   .attr("text-anchor", "end")
+			           .attr("font-family", "sans-serif")
+			           .attr("font-size", textHeight + "px")
+			           .attr("font-weight", "bold")
+			           .attr("fill", "black");	
 				}
 			};
 		});
