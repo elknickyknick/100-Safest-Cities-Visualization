@@ -205,12 +205,12 @@
 							    .append("svg")
 								.attr("width", horizSvgWidth)
 								.attr("height", horizSvgHeight);
-					var atteem = d3.select("#info")
+					var cityCountToolTip = d3.select("#info")
 									.append("div")
 									.style("position", "absolute")
 									.style("z-index", "10")
 									.style("visibility", "hidden")
-									.classed("atteem", true);
+									.classed("cityCountToolTip", true);
 					var ar = myData.safeCity.length - 1;
 					
 					svg.selectAll("crIndexLowToHigh_bars")
@@ -540,6 +540,12 @@
 							    .append("svg")
 							    .attr("width", verSvgWidth)
 								.attr("height", verSvgHeight);
+					var cityCountToolTip = d3.select("#info")
+									.append("div")
+									.style("position", "absolute")
+									.style("z-index", "10")
+									.style("visibility", "hidden")
+									.attr("id", "aToolTip");
 					
 					svg.selectAll("cityCount_bars")
                        .data(count)
@@ -561,17 +567,17 @@
 			           .attr("fill", "#0c0c0c")
 					   .on("mouseover", function(d,i)
 						   {
-								return (toolTip.style("visibility", "visible")
-								               .text("A city from " + dataStates[i] + " appeared on this list " + d + " time(s)." ));
+								return (cityCountToolTip.style("visibility", "visible")
+								               .text("A city from " + dataStates[i] + " appeared on this list " + d + " time(s)."));
 						   })
 					   .on("mousemove", function()
 						  {
-								return (toolTip.style("top", (d3.event.pageY-10)+"px")
+								return (cityCountToolTip.style("top", (d3.event.pageY-10)+"px")
 								               .style("left",(d3.event.pageX+10)+"px"));
 						  })
 					   .on("mouseout", function()
 						  {
-								return toolTip.style("visibility", "hidden");
+								return cityCountToolTip.style("visibility", "hidden");
 						  });
 					
 					svg.selectAll("cityCount_stateName")
