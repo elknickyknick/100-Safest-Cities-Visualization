@@ -47,9 +47,9 @@
 	<script type="text/javascript">
 		"use strict";
 		
-		d3.json("100SafestCities.json", function(dataa)
+		d3.json("100SafestCities.json", function(myData)
 		{	
-            var tatt = d3.select('#aToolTip')
+            var toolTip = d3.select('#aToolTip')
                                  .style("position", "absolute")
 							     .style("z-index", "8");
             var city_and_state = d3.select("#aToolTip")
@@ -63,6 +63,7 @@
                                    .append("div");
             var property_crimes = d3.select("#aToolTip")
                                     .append("div");
+            
                                      
 			document.querySelector("#graphSelector").onchange = function(event)
 			{
@@ -78,14 +79,14 @@
                 var populationHolder = [];
                 var violentCrimesHolder = [];
                 var propertyCrimesHolder = [];
-				for(var cityInfo = 0; cityInfo < dataa.safeCity.length; cityInfo++)
+				for(var cityInfo = 0; cityInfo < myData.safeCity.length; cityInfo++)
 				{
-					cityNameHolder.push(dataa.safeCity[cityInfo].city);
-					stateNameHolder.push(dataa.safeCity[cityInfo].state);
-					crimeRateHolder.push(dataa.safeCity[cityInfo].totCrimes);
-                    populationHolder.push(dataa.safeCity[cityInfo].population);
-					violentCrimesHolder.push(dataa.safeCity[cityInfo].violentCrimes);
-                    propertyCrimesHolder.push(dataa.safeCity[cityInfo].propertyCrimes);
+					cityNameHolder.push(myData.safeCity[cityInfo].city);
+					stateNameHolder.push(myData.safeCity[cityInfo].state);
+					crimeRateHolder.push(myData.safeCity[cityInfo].totCrimes);
+                    populationHolder.push(myData.safeCity[cityInfo].population);
+					violentCrimesHolder.push(myData.safeCity[cityInfo].violentCrimes);
+                    propertyCrimesHolder.push(myData.safeCity[cityInfo].propertyCrimes);
                     
 					//---the following colors are based based on information not in the JSON
 					//   file. If a city's Crime Index (how much safer it is than the average
@@ -119,7 +120,7 @@
 				//---svg height
 				var barHeight = 27;
 				var barSpacing = 10;
-				var horizSvgHeight = ((barHeight + barSpacing) * dataa.safeCity.length);
+				var horizSvgHeight = ((barHeight + barSpacing) * myData.safeCity.length);
                                             
 			/***Horizontal Bar Choices***/
 				if(event.target.value == "optionA")
@@ -129,15 +130,9 @@
 							    .append("svg")
 							    .attr("width", horizSvgWidth)
 								.attr("height", horizSvgHeight);
-					var tooltip = d3.select("#info")
-									.append("div")
-									.style("position", "absolute")
-									.style("z-index", "10")
-									.style("visibility", "hidden")
-									.classed("toolTip", true);
 					
 					svg.selectAll("crIndexHightoLow_bars")
-					   .data(dataa.safeCity)
+					   .data(myData.safeCity)
 					   .enter()
 					   .append("rect")
 					   .attr("x", textBorder + 10)
@@ -156,7 +151,7 @@
 							})
 						.on("mouseover", function(d,i)
 						   {
-								return ((tatt.style("visibility", "visible")),
+								return ((toolTip.style("visibility", "visible")),
 								        (city_and_state.style("visibility", "visible")
                                                        .text(d.city + ", " + d.state)),
                                         (total_crime_number.style("visibility", "visible")
@@ -167,15 +162,15 @@
                                                        .text("Violent Crimes: " + d.violentCrimes + " (" + (Math.floor(100*(d.violentCrimes/d.totCrimes))) + "%)")),
                                         (property_crimes.style("visibility", "visible")
                                                         .text("Property Crimes: " + d.propertyCrimes + " (" + (Math.ceil(100*(d.propertyCrimes/d.totCrimes))) + "%)")));
-						   })
+                           })
 						.on("mousemove", function()
 						   {
-								return (tatt.style("top", (d3.event.pageY-10)+"px")
+								return (toolTip.style("top", (d3.event.pageY-10)+"px")
 								               .style("left",(d3.event.pageX+10)+"px"));
 						   })
 						.on("mouseout", function()
 						   {
-								return (tatt.style("visibility", "hidden"),
+								return (toolTip.style("visibility", "hidden"),
                                         city_and_state.style("visibility", "hidden"),
                                         total_crime_number.style("visibility", "hidden"),
                                         citys_population.style("visibility", "hidden"),
@@ -184,12 +179,12 @@
 						   });
 							
 					svg.selectAll("crIndexHightoLow_cityName")
-					   .data(dataa.safeCity)
+					   .data(myData.safeCity)
 					   .enter()
 					   .append("text")
 					   .text(function(d, i)
 							{
-								return dataa.safeCity[i].city + ", " + dataa.safeCity[i].state;
+								return myData.safeCity[i].city + ", " + myData.safeCity[i].state;
 							})
 					   .attr("x", textBorder)
 					   .attr("y", function(d, i)
@@ -210,16 +205,16 @@
 							    .append("svg")
 								.attr("width", horizSvgWidth)
 								.attr("height", horizSvgHeight);
-					var tooltip = d3.select("#info")
+					var atteem = d3.select("#info")
 									.append("div")
 									.style("position", "absolute")
 									.style("z-index", "10")
 									.style("visibility", "hidden")
-									.classed("toolTip", true);
-					var ar = dataa.safeCity.length - 1;
+									.classed("atteem", true);
+					var ar = myData.safeCity.length - 1;
 					
 					svg.selectAll("crIndexLowToHigh_bars")
-					   .data(dataa.safeCity)
+					   .data(myData.safeCity)
 					   .enter()
 					   .append("rect")
 					   .attr("x", textBorder + 10)
@@ -229,7 +224,7 @@
 							})
 		               .attr("width", function(d, i)
 						    {
-								return (dataa.safeCity[ar-i].totCrimes - (dataa.safeCity[ar-i].totCrimes * horizBarScale));
+								return (myData.safeCity[ar-i].totCrimes - (myData.safeCity[ar-i].totCrimes * horizBarScale));
 							})
 			           .attr("height", barHeight)
 		               .attr("fill", function(d,i)
@@ -238,27 +233,27 @@
 							})
 					   .on("mouseover", function(d,i)
 						   {
-								return ((tatt.style("visibility", "visible")),
+								return ((toolTip.style("visibility", "visible")),
 								        (city_and_state.style("visibility", "visible")
-                                                       .text(dataa.safeCity[ar-i].city + ", " + dataa.safeCity[ar-i].state)),
+                                                       .text(myData.safeCity[ar-i].city + ", " + myData.safeCity[ar-i].state)),
                                         (total_crime_number.style("visibility", "visible")
-                                                           .text("Total Crime: " + dataa.safeCity[ar-i].totCrimes)),
+                                                           .text("Total Crime: " + myData.safeCity[ar-i].totCrimes)),
                                         (citys_population.style("visibility", "visible")
-                                                         .text("Population: " + dataa.safeCity[ar-i].population)),
+                                                         .text("Population: " + myData.safeCity[ar-i].population)),
                                         (violent_crimes.style("visibility", "visible")
-                                                       .text("Violent Crimes: " + dataa.safeCity[ar-i].violentCrimes + " (" + (Math.floor(100*(dataa.safeCity[ar-i].violentCrimes/dataa.safeCity[ar-i].totCrimes))) + "%)")),
+                                                       .text("Violent Crimes: " + myData.safeCity[ar-i].violentCrimes + " (" + (Math.floor(100*(myData.safeCity[ar-i].violentCrimes/myData.safeCity[ar-i].totCrimes))) + "%)")),
                                         (property_crimes.style("visibility", "visible")
-                                                        .text("Property Crimes: " + dataa.safeCity[ar-i].propertyCrimes + " (" + (Math.ceil(100*(dataa.safeCity[ar-i].propertyCrimes/dataa.safeCity[ar-i].totCrimes))) + "%)")));
+                                                        .text("Property Crimes: " + myData.safeCity[ar-i].propertyCrimes + " (" + (Math.ceil(100*(myData.safeCity[ar-i].propertyCrimes/myData.safeCity[ar-i].totCrimes))) + "%)")));
 
 						   })
 					   .on("mousemove", function()
 						  {
-								return (tatt.style("top", (d3.event.pageY-10)+"px")
+								return (toolTip.style("top", (d3.event.pageY-10)+"px")
 								               .style("left",(d3.event.pageX+10)+"px"));
 						  })
 					   .on("mouseout", function()
 						  {
-								return (tatt.style("visibility", "hidden"),
+								return (toolTip.style("visibility", "hidden"),
                                         city_and_state.style("visibility", "hidden"),
                                         total_crime_number.style("visibility", "hidden"),
                                         citys_population.style("visibility", "hidden"),
@@ -267,12 +262,12 @@
 						  });
 					
 					svg.selectAll("crIndexLowToHigh_cityName")
-					   .data(dataa.safeCity)
+					   .data(myData.safeCity)
 					   .enter()
 					   .append("text")
 					   .text(function(d, i)
 							{
-								return dataa.safeCity[i].city + ", " + dataa.safeCity[i].state;
+								return myData.safeCity[i].city + ", " + myData.safeCity[i].state;
 							})
 					   .attr("x", textBorder)
 					   .attr("y", function(d, i)
@@ -300,7 +295,7 @@
                     var tempPopulation = [];
                     var tempViolentCrimes = [];
                     var tempPropertyCrimes = [];
-					for(var v = 0; v < (dataa.safeCity.length); v++)
+					for(var v = 0; v < (myData.safeCity.length); v++)
 					{
 						//---find the highest crime rate value so that, specifically, its index in 
 						//   the array can be found and accessed
@@ -348,7 +343,7 @@
 							})
 					   .on("mouseover", function(d,i)
 						   {
-                                return ((tatt.style("visibility", "visible")),
+                                return ((toolTip.style("visibility", "visible")),
 								        (city_and_state.style("visibility", "visible")
                                                        .text(tempCityName[i] + ", " + tempStateName[i])),
                                         (total_crime_number.style("visibility", "visible")
@@ -362,12 +357,12 @@
 						   })
 					   .on("mousemove", function()
 						  {
-								return (tatt.style("top", (d3.event.pageY-10)+"px")
+								return (toolTip.style("top", (d3.event.pageY-10)+"px")
 								               .style("left",(d3.event.pageX+10)+"px"));
 						  })
 					   .on("mouseout", function()
 						  {
-								return (tatt.style("visibility", "hidden"),
+								return (toolTip.style("visibility", "hidden"),
                                         city_and_state.style("visibility", "hidden"),
                                         total_crime_number.style("visibility", "hidden"),
                                         citys_population.style("visibility", "hidden"),
@@ -410,7 +405,7 @@
                     var tempPopulation = [];
                     var tempViolentCrimes = [];
                     var tempPropertyCrimes = [];
-					for(var v = 0; v < (dataa.safeCity.length); v++)
+					for(var v = 0; v < (myData.safeCity.length); v++)
 					{
 						//---find the highest crime rate value so that, specifically, its index in 
 						//   the array can be found and accessed
@@ -458,7 +453,7 @@
 							})
 					   .on("mouseover", function(d,i)
 						   {
-                                return ((tatt.style("visibility", "visible")),
+                                return ((toolTip.style("visibility", "visible")),
 								        (city_and_state.style("visibility", "visible")
                                                        .text(tempCityName[i] + ", " + tempStateName[i])),
                                         (total_crime_number.style("visibility", "visible")
@@ -472,12 +467,12 @@
 						   })
 					   .on("mousemove", function()
 						  {
-								return (tatt.style("top", (d3.event.pageY-10)+"px")
+								return (toolTip.style("top", (d3.event.pageY-10)+"px")
 								               .style("left",(d3.event.pageX+10)+"px"));
 						  })
 					   .on("mouseout", function()
 						  {
-								return (tatt.style("visibility", "hidden"),
+								return (toolTip.style("visibility", "hidden"),
                                         city_and_state.style("visibility", "hidden"),
                                         total_crime_number.style("visibility", "hidden"),
                                         citys_population.style("visibility", "hidden"),
@@ -513,21 +508,21 @@
 					//   so, I made an array to hold one reference to each state and one
 					//   array to keep count.
 					
-					var statess = [];
+					var dataStates = [];
 					var count = [];
 					//---getting one reference to each state required fiiltering the array
 					//   that held states 
-					statess = stateNameHolder.filter(function(value, index,self)
+					dataStates = stateNameHolder.filter(function(value, index,self)
 					{
 						return self.indexOf(value) === index;
 					});
 					//---count how many times a state exists in the JSON
-					for(var h = 0; h < statess.length; h++)
+					for(var h = 0; h < dataStates.length; h++)
 					{
 						var c = 0;
-						for(var r = 0; r < dataa.safeCity.length; r++)
+						for(var r = 0; r < myData.safeCity.length; r++)
 						{
-							if(dataa.safeCity[r].state == statess[h])
+							if(myData.safeCity[r].state == dataStates[h])
 							{
 								c = c + 1;
 							}
@@ -545,12 +540,6 @@
 							    .append("svg")
 							    .attr("width", verSvgWidth)
 								.attr("height", verSvgHeight);
-					var tooltip = d3.select("#info")
-									.append("div")
-									.style("position", "absolute")
-									.style("z-index", "10")
-									.style("visibility", "hidden")
-									.classed("toolTip", true);
 					
 					svg.selectAll("cityCount_bars")
                        .data(count)
@@ -572,21 +561,21 @@
 			           .attr("fill", "#0c0c0c")
 					   .on("mouseover", function(d,i)
 						   {
-								return (tooltip.style("visibility", "visible")
-								               .text("City Count: " + d));
+								return (toolTip.style("visibility", "visible")
+								               .text("A city from " + dataStates[i] + " appeared on this list " + d + " time(s)." ));
 						   })
 					   .on("mousemove", function()
 						  {
-								return (tooltip.style("top", (d3.event.pageY-10)+"px")
+								return (toolTip.style("top", (d3.event.pageY-10)+"px")
 								               .style("left",(d3.event.pageX+10)+"px"));
 						  })
 					   .on("mouseout", function()
 						  {
-								return tooltip.style("visibility", "hidden");
+								return toolTip.style("visibility", "hidden");
 						  });
 					
 					svg.selectAll("cityCount_stateName")
-					   .data(statess)
+					   .data(dataStates)
 			           .enter()
 			           .append("text")
 			           .text(function(d, i)
