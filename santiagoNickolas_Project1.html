@@ -6,10 +6,19 @@
 	<!---<script src="https://d3js.org/d3.v3.min.js"></script>--->
 	
 	<style type="text/css">
+        body
+        {
+            height: 4100px;
+        }
 		svg
 		{
 			background-color: #decece;
 		}
+        
+        h1
+        {
+            font-family: 'Liquidism part 2', sans-serif;
+        }
         
 		#aToolTip
 		{
@@ -31,6 +40,7 @@
 	</style>
 </head>
 <body>
+    <h1>HELOOOOOOOOOOOOOOOOOOOOOOOOOOO</h1>
 	<select id="graphSelector" >
 		<option value="none">--Select Graph--</option>
 		<option value="optionA">Crime Index (lowest to highest)</option>
@@ -62,8 +72,7 @@
             var violent_crimes = d3.select("#aToolTip")
                                    .append("div");
             var property_crimes = d3.select("#aToolTip")
-                                    .append("div");
-            
+                                    .append("div");          
                                      
 			document.querySelector("#graphSelector").onchange = function(event)
 			{
@@ -79,6 +88,9 @@
                 var populationHolder = [];
                 var violentCrimesHolder = [];
                 var propertyCrimesHolder = [];
+                
+                var crimeAreaHolder = [];
+                
 				for(var cityInfo = 0; cityInfo < myData.safeCity.length; cityInfo++)
 				{
 					cityNameHolder.push(myData.safeCity[cityInfo].city);
@@ -87,6 +99,8 @@
                     populationHolder.push(myData.safeCity[cityInfo].population);
 					violentCrimesHolder.push(myData.safeCity[cityInfo].violentCrimes);
                     propertyCrimesHolder.push(myData.safeCity[cityInfo].propertyCrimes);
+                    
+                    crimeAreaHolder.push(myData.safeCity[cityInfo].crimeArea);
                     
 					//---the following colors are based based on information not in the JSON
 					//   file. If a city's Crime Index (how much safer it is than the average
@@ -121,10 +135,16 @@
 				var barHeight = 27;
 				var barSpacing = 10;
 				var horizSvgHeight = ((barHeight + barSpacing) * myData.safeCity.length);
-                                            
+                
+                //---miniSVG
+                var msvgDimension = 200;
+                var msvgBarWidth = (msvgDimension/5);
+                
+                
 			/***Horizontal Bar Choices***/
 				if(event.target.value == "optionA")
 				{
+                    
 					d3.select("svg").remove();
 					var svg = d3.select('#info')
 							    .append("svg")
@@ -138,11 +158,11 @@
 					   .attr("x", textBorder + 10)
 		               .attr("y", function(d, i)
 							{
-								return ((barSpacing/2) + (i * (barHeight + barSpacing)))
+								return ((barSpacing/2) + (i * (barHeight + barSpacing)));
 							})
 		               .attr("width", function(d, i)
 						    {
-								return (d.totCrimes - (d.totCrimes * horizBarScale))
+								return (d.totCrimes - (d.totCrimes * horizBarScale));
 							})
 			           .attr("height", barHeight)
 					   .attr("fill", function(d,i)
@@ -151,6 +171,33 @@
 							})
 						.on("mouseover", function(d,i)
 						   {
+                                var miniSafeCityData = myData.safeCity[i];
+                                var crimeAreaSVG = d3.select("#aToolTip")
+                                                      .append("svg")
+                                                      .attr("width", msvgDimension)
+                                                      .attr("height", msvgDimension)
+                                                      .attr("id","myMiniSVG");
+                                crimeAreaSVG.selectAll("idkTEMPmyMiniSVG")
+                                             .data(miniSafeCityData.crimeArea)
+                                             .enter()
+                                             .append("rect")
+                                             .attr("x", function(d, i)
+                                                  {
+                                                       return (msvgBarWidth + (i * (msvgBarWidth*2)));
+                                                  })
+                                             .attr("y", function(d,i)
+                                                  {
+                                                       return (200-(200 * (miniSafeCityData.crimeArea[i].a/(miniSafeCityData.crimeArea[0].a + miniSafeCityData.crimeArea[1].a))));
+                                                  })
+                                             .attr("width", function(d)
+                                                  {
+                                                       return msvgBarWidth;
+                                                  })
+                                             .attr("height", function(d,i)
+                                                  {
+                                                       return ((200 * (miniSafeCityData.crimeArea[i].a/(miniSafeCityData.crimeArea[0].a + miniSafeCityData.crimeArea[1].a))));
+                                                  });
+
 								return ((toolTip.style("visibility", "visible")),
 								        (city_and_state.style("visibility", "visible")
                                                        .text(d.city + ", " + d.state)),
@@ -159,17 +206,18 @@
                                         (citys_population.style("visibility", "visible")
                                                          .text("Population: " + d.population)),
                                         (violent_crimes.style("visibility", "visible")
-                                                       .text("Violent Crimes: " + d.violentCrimes + " (" + (Math.floor(100*(d.violentCrimes/d.totCrimes))) + "%)")),
+                                                       .text("Violent Crimes: " + d.crimeArea[0].a + " (" + (Math.floor(100*(d.crimeArea[0].a/d.totCrimes))) + "%)")),
                                         (property_crimes.style("visibility", "visible")
-                                                        .text("Property Crimes: " + d.propertyCrimes + " (" + (Math.ceil(100*(d.propertyCrimes/d.totCrimes))) + "%)")));
+                                                        .text("Property Crimes: " + d.crimeArea[1].a + " (" + (Math.ceil(100*(d.crimeArea[1].a/d.totCrimes))) + "%)")));
                            })
 						.on("mousemove", function()
 						   {
-								return (toolTip.style("top", (d3.event.pageY-10)+"px")
+								return (toolTip.style("top", (d3.event.pageY-30)+"px")
 								               .style("left",(d3.event.pageX+10)+"px"));
 						   })
 						.on("mouseout", function()
 						   {
+                                d3.select("#myMiniSVG").remove();
 								return (toolTip.style("visibility", "hidden"),
                                         city_and_state.style("visibility", "hidden"),
                                         total_crime_number.style("visibility", "hidden"),
@@ -184,6 +232,8 @@
 					   .append("text")
 					   .text(function(d, i)
 							{
+                                //console.log(myData.safeCity[i].city);
+                                //console.log(myData.safeCity[i].crimeArea[0]);
 								return myData.safeCity[i].city + ", " + myData.safeCity[i].state;
 							})
 					   .attr("x", textBorder)
@@ -233,6 +283,34 @@
 							})
 					   .on("mouseover", function(d,i)
 						   {
+                                var miniSafeCityData = myData.safeCity[ar-i];
+                                
+                                var crimeAreaSVG = d3.select("#aToolTip")
+                                                      .append("svg")
+                                                      .attr("width", msvgDimension)
+                                                      .attr("height", msvgDimension)
+                                                      .attr("id","myMiniSVG");
+                                
+                                crimeAreaSVG.selectAll("idkTEMPmyMiniSVG")
+                                             .data(miniSafeCityData.crimeArea)
+                                             .enter()
+                                             .append("rect")
+                                             .attr("x", function(d, i)
+                                                  {
+                                                       return (msvgBarWidth + (i * (msvgBarWidth*2)));
+                                                  })
+                                             .attr("y", function(d,i)
+                                                  {
+                                                       return (200-(200 * (miniSafeCityData.crimeArea[i].a/(miniSafeCityData.crimeArea[0].a + miniSafeCityData.crimeArea[1].a))));
+                                                  })
+                                             .attr("width", function(d)
+                                                  {
+                                                       return msvgBarWidth;
+                                                  })
+                                             .attr("height", function(d,i)
+                                                  {
+                                                       return ((200 * (miniSafeCityData.crimeArea[i].a/(miniSafeCityData.crimeArea[0].a + miniSafeCityData.crimeArea[1].a))));
+                                                  });
 								return ((toolTip.style("visibility", "visible")),
 								        (city_and_state.style("visibility", "visible")
                                                        .text(myData.safeCity[ar-i].city + ", " + myData.safeCity[ar-i].state)),
@@ -253,6 +331,7 @@
 						  })
 					   .on("mouseout", function()
 						  {
+                                d3.select("#myMiniSVG").remove();
 								return (toolTip.style("visibility", "hidden"),
                                         city_and_state.style("visibility", "hidden"),
                                         total_crime_number.style("visibility", "hidden"),
@@ -295,6 +374,7 @@
                     var tempPopulation = [];
                     var tempViolentCrimes = [];
                     var tempPropertyCrimes = [];
+                    
 					for(var v = 0; v < (myData.safeCity.length); v++)
 					{
 						//---find the highest crime rate value so that, specifically, its index in 
@@ -314,6 +394,7 @@
                         tempPopulation.push(populationHolder[highestIndex]);
                         tempViolentCrimes.push(violentCrimesHolder[highestIndex]);
                         tempPropertyCrimes.push(propertyCrimesHolder[highestIndex]);
+                        
 						crimeRateHolder.splice(highestIndex,1);
 						cityNameHolder.splice(highestIndex,1);
 						stateNameHolder.splice(highestIndex,1);
@@ -321,8 +402,9 @@
                         populationHolder.splice(highestIndex,1);
                         violentCrimesHolder.splice(highestIndex,1);
                         propertyCrimesHolder.splice(highestIndex,1);
+                        
 					}
-					
+                    
 					svg.selectAll("totalCrimHighToLow_bars")
                        .data(tempCrimeRate)
                        .enter()
@@ -342,7 +424,7 @@
 								return tempColor[i];
 							})
 					   .on("mouseover", function(d,i)
-						   {
+						   {    
                                 return ((toolTip.style("visibility", "visible")),
 								        (city_and_state.style("visibility", "visible")
                                                        .text(tempCityName[i] + ", " + tempStateName[i])),
@@ -362,6 +444,7 @@
 						  })
 					   .on("mouseout", function()
 						  {
+                                d3.select("#myMiniSVG").remove();
 								return (toolTip.style("visibility", "hidden"),
                                         city_and_state.style("visibility", "hidden"),
                                         total_crime_number.style("visibility", "hidden"),
@@ -424,6 +507,7 @@
                         tempPopulation.push(populationHolder[lowestIndex]);
                         tempViolentCrimes.push(violentCrimesHolder[lowestIndex]);
                         tempPropertyCrimes.push(propertyCrimesHolder[lowestIndex]);
+                        
 						crimeRateHolder.splice(lowestIndex,1);
 						cityNameHolder.splice(lowestIndex,1);
 						stateNameHolder.splice(lowestIndex,1);
